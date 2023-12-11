@@ -6,3 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+crochet = {git = "https://github.com/boxbeam/crochet", rev = "d00f01409b7075a9a5e17ffb5d92baabafe0c1a5"}
