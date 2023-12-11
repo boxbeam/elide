@@ -29,13 +29,7 @@ pub struct GenericType {
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
-pub enum ContextualTypeBound {
-    ExposedType(TypeBound),
-    HiddenType(TypeBound),
-}
-
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
-pub struct GenericTraitImplementation {
+pub struct GenericTraitImpl {
     pub negative: bool,
     pub trait_id: Id<GenericTrait>,
     pub params: Vec<TypeBound>,
@@ -45,21 +39,13 @@ pub struct GenericTraitImplementation {
 pub enum TypeBound {
     Generic(GenericBound),
     Concrete(ConcreteType),
+    Unknown,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct GenericBound {
     pub exposed: bool,
-    pub traits: Vec<GenericTraitImplementation>,
-}
-
-impl ContextualTypeBound {
-    fn bound(&self) -> &TypeBound {
-        use ContextualTypeBound::*;
-        match self {
-            ExposedType(t) | HiddenType(t) => &t,
-        }
-    }
+    pub traits: Vec<GenericTraitImpl>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -71,6 +57,7 @@ pub struct ConcreteParameterList(Vec<Id<ConcreteType>>);
 enum TypeError {
     IncompatibleTypes(Id<ConcreteType>, Id<ConcreteType>),
     NotImplemented(Id<ConcreteTrait>),
+    IncorrectGenericArgCount { expected: usize, actual: usize },
 }
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
@@ -118,7 +105,7 @@ pub struct TypeRegistry {
     // trait ID -> implementors
     concrete_impls: Vec<Vec<Id<ConcreteType>>>,
     // generic trait ID -> blanket impls
-    generic_impls: Vec<Vec<Id<GenericTraitImplementation>>>,
+    generic_impls: Vec<Vec<Id<GenericTraitImpl>>>,
     // id of generic type + concrete type parameters -> concrete type
     generic_type_lookup: HashMap<TypeKey, Id<ConcreteType>>,
     // id of generic trait + concrete type parameters -> concrete trait
@@ -146,5 +133,5 @@ impl_index!(Trait::Concrete >> ConcreteTrait = traits);
 impl_index!(Trait::Generic >> GenericTrait = traits);
 
 pub struct TypeScope {
-    pub types: Vec<ContextualTypeBound>,
+    pub types: Vec<TypeBound>,
 }
